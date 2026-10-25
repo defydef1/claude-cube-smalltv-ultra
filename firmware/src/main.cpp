@@ -879,7 +879,7 @@ void faceLabels(uint8_t emo, const String &sub, int count) {
   if (!att) tftGlow(120, EYE_Y, 116, dim ? 0x0E0806 : 0x220F0A, GROUND, 8);
   uint16_t ink = rgb(att ? 0x180905 : (dim ? C_GREY : 0xFFFFFF));
   uint16_t subInk = rgb(att ? 0x602616 : C_GREY);
-  if (att) aaDraw(F_ATTN, 14, 170, emoWord(emo), ink, bg);
+  if (att) aaDraw(F_ATTN, 14, 170, emoWord(emo), ink, bg, -1);  // tight: ТИ ПОТРІБЕН just fits
   else aaDraw(F_WORD, 14, 164, emoWord(emo), ink, bg);
   aaDraw(F_SMALL, 14, att ? 187 : 184, aaFit(F_SMALL, sub, att ? 212 : 160).c_str(), subInk, bg);
   ruleLine(att ? 196 : 194, att ? 0xB45E44 : C_RULE);
@@ -3069,10 +3069,10 @@ Screen decide() {
   // all clear for one minute; a feed that flickers on/off right after doesn't restart it
   if (prevAlert && !al && (!allClearUntil || (int32_t)(t - allClearUntil) > 5 * 60000L)) allClearUntil = t + 60000;
   prevAlert = al;
-  // a long alert stops hogging the cube: after 25 min it shows 20 s of every minute
+  // a long alert stops hogging the cube: after 20 min it shows 15 s of every 3 minutes
   auto alertTurn = [&](time_t st) {
     long el = (st > 0 && timeValid()) ? (long)(time(nullptr) - st) : 0;
-    return el < 25 * 60 || (t / 1000) % 60 < 20;
+    return el < 20 * 60 || (t / 1000) % 180 < 15;
   };
   if (listening() || (cur == S_LISTEN && millis() - listenAt < 1500)) return S_LISTEN;  // he's talking to Claude: seconds, even over an alert
   if (al && alertTurn(alertStartReal())) return S_ALERT;
@@ -3275,7 +3275,7 @@ void handleStatus() {
   // the JSON plus its serialized copy need ~2-3 KB in one piece: refuse rather than run out (OOM = reboot)
   if (ESP.getFreeHeap() < 5000 || ESP.getMaxFreeBlockSize() < 3000) return server.send(503, "text/plain", "busy");
   JsonDocument d;
-  d["fw"] = "claude-cube 4.3.1";
+  d["fw"] = "claude-cube 4.3.3";
   { static uint32_t f0 = 0, t0 = 0; uint32_t now = millis();
     if (now - t0 > 0) d["lfps"] = (listenFrames - f0) * 1000.0 / (now - t0); f0 = listenFrames; t0 = now; }
   d["screen"] = (int)cur;

@@ -181,7 +181,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
 /* status + settings */
 const KEYS=['brt','nbrt','non','noff','slide','wxsec','cxsec'];
 function status(){return fetch('/status').then(r=>r.json()).then(s=>{
- C=s.cfg;FS=s;$('dot').className='dt on';$('stx').textContent=s.wx&&s.wx.ok?Math.round(s.wx.t)+'° · '+t('city'):t('online');
+ C=s.cfg;FS=s;$('dot').className='dt on';$('stx').textContent=s.wx&&s.wx.ok?Math.round(s.wx.t)+'° · '+regName():t('online');
  if(C.lang&&C.lang!=LG&&I18N[C.lang]){LG=C.lang;try{localStorage.setItem('lang',LG)}catch(e){}applyLang()}
  if(C.langs&&!$('lang').options.length)C.langs.split(',').filter(l=>I18N[l]).forEach(l=>$('lang').add(new Option(I18N[l]._name,l)));$('lang').value=LG;
  KEYS.forEach(k=>{if(document.activeElement!=$(k))$(k).value=C[k]});
@@ -193,6 +193,7 @@ function status(){return fetch('/status').then(r=>r.json()).then(s=>{
  $('sys').innerHTML=(s.fw||'')+' · '+t('memory')+' '+KB(s.heap||0)+' · '+(s.photos||0)+' '+t('nfiles');
 }).catch(()=>{$('dot').className='dt';$('stx').textContent=t('offline')})}
 /* regions: alerts from the built-in list, outages from the relay's /regions */
+const regName=()=>{const n=(t('_regions')||[])[C.areg||0]||t('city');return n.toLowerCase().replace(/(^|[\s-])\S/g,m=>m.toUpperCase())};
 let RG=null;
 function regionsUI(){const a=$('areg');if(!a.options.length||a.dataset.lg!=LG){a.innerHTML='';a.dataset.lg=LG;
   t('_regions').forEach((n,i)=>a.add(new Option(n,i)))}
@@ -433,5 +434,6 @@ function lifeShow(L){if(!L)return;const st=L.state;
  if(st=='idle'||st=='over'){clearInterval(lpT);lpT=null}}
 function lifePoll(){if(lpT)return;lpT=setInterval(()=>fetch('/status').then(r=>r.json()).then(s=>lifeShow(s.life)).catch(()=>{}),2000)}
 lpPaint();applyLang();
+{const h=location.hash.slice(1);if(/^[012]$/.test(h))document.querySelector('nav button[data-t="'+h+'"]').click()}  /* #2 opens Settings */
 status();setInterval(status,30000);
 </script></body></html>

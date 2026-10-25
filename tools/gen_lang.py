@@ -20,7 +20,7 @@ FD = os.path.expanduser("~/Library/Fonts/")
 # key (or prefix ending in "_") -> (font file, px, max width) for the fit check. The Russian
 # strings are the ones he has looked at on the cube, so a row may always be as wide as its ru.
 FIT = [
-    ("EMO_ATTN", "Montserrat-Black.ttf", 30, 224),
+    ("EMO_ATTN", "Montserrat-Black.ttf", 30, 222),
     ("EMO_", "Montserrat-Black.ttf", 24, 212),
     ("AL_WORD", "Montserrat-Black.ttf", 41, 216),
     ("CLR_WORD", "Montserrat-Black.ttf", 52, 216),
@@ -29,7 +29,7 @@ FIT = [
     ("WX_", "Montserrat-SemiBold.ttf", 17, 212),
     ("AL_YELLOW", "Montserrat-SemiBold.ttf", 17, 212), ("AL_RED", "Montserrat-SemiBold.ttf", 17, 212),
     ("SETUP", "Montserrat-SemiBold.ttf", 17, 150), ("LF_TITLE", "Montserrat-SemiBold.ttf", 17, 212),
-    ("AL_MISSILES", "Montserrat-SemiBold.ttf", 13, 212), ("AL_NEAR", "Montserrat-Bold.ttf", 18, 212),
+    ("AL_MISSILES", "Montserrat-SemiBold.ttf", 13, 212), ("AL_NEAR", "Montserrat-Bold.ttf", 18, 190), ("AL_GO", "Montserrat-Bold.ttf", 18, 190),
     ("CLR_OUT", "Montserrat-Bold.ttf", 18, 190), ("LF_COLORS", "Montserrat-SemiBold.ttf", 13, 212),
     ("SUB_", "Montserrat-SemiBold.ttf", 13, 212), ("LF_", "Montserrat-SemiBold.ttf", 13, 212),
     ("PET_", "Montserrat-SemiBold.ttf", 13, 212),
