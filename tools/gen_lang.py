@@ -34,6 +34,7 @@ FIT = [
     ("SUB_", "Montserrat-SemiBold.ttf", 13, 212), ("LF_", "Montserrat-SemiBold.ttf", 13, 212),
     ("PET_", "Montserrat-SemiBold.ttf", 13, 212),
     ("RG", "Montserrat-SemiBold.ttf", 17, 180),
+    ("SETUP_WAIT_SUB", "Montserrat-SemiBold.ttf", 13, 212), ("SETUP_OTHER", "Montserrat-SemiBold.ttf", 13, 188),
 ]
 
 

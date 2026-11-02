@@ -2342,18 +2342,21 @@ void nightScreen(bool enter) {
 }
 
 // ---------- setup screen (no Wi-Fi) ----------
+bool wifiSaved() { return WiFi.SSID().length() > 0; }  // credentials from an earlier setup
+
 void setupScreen(bool enter) {
   if (!enter) return;
   uint16_t g = rgb(GROUND), grey = rgb(C_GREY);
+  bool wait = wifiSaved();  // a known network is just gone (router off): say so, keep setup as plan B
   tft.fillScreen(g);
   tftGlow(196, 46, 70, 0x081E2C, GROUND, 6);
-  aaDraw(F_LABEL, 14, 31, L(T_SETUP), rgb(C_CYAN), g);
+  aaDraw(F_LABEL, 14, 31, wait ? L(T_SETUP_WAIT) : L(T_SETUP), rgb(C_CYAN), g);
   uint16_t arcBg = rgb(glowAt(30, 70, 0x081E2C, GROUND, 6));
   const int rr[3] = {40, 27, 14};
   for (int i = 0; i < 3; i++)
     tft.drawSmoothArc(196, 64, rr[i] + 3, rr[i] - 3, 135, 225, rgb(mixF(GROUND, C_CYAN, 0.4 + i * 0.3)), arcBg, true);
   tft.fillSmoothCircle(196, 64, 5, rgb(C_CYAN), arcBg);
-  const char *hint[2] = {L(T_SETUP_JOIN), L(T_SETUP_OPEN)};
+  const char *hint[2] = {wait ? L(T_SETUP_OTHER) : L(T_SETUP_JOIN), L(T_SETUP_OPEN)};
   const char *val[2] = {"ClaudeCube", "192.168.4.1"};
   const char *num[2] = {"1", "2"};
   const int ys[2] = {106, 164};
@@ -2365,7 +2368,7 @@ void setupScreen(bool enter) {
     aaDraw(F_PRICE, 12, y + 14, val[i], TFT_WHITE, g);
   }
   ruleLine();
-  aaDraw(F_SMALL, 14, 222, L(T_SETUP_OFF), grey, g);
+  aaDraw(F_SMALL, 14, 222, wait ? L(T_SETUP_WAIT_SUB) : L(T_SETUP_OFF), grey, g);
 }
 
 // ---------- power outages (Yasno schedule, pushed by the Mac to /outage) ----------
@@ -3275,7 +3278,7 @@ void handleStatus() {
   // the JSON plus its serialized copy need ~2-3 KB in one piece: refuse rather than run out (OOM = reboot)
   if (ESP.getFreeHeap() < 5000 || ESP.getMaxFreeBlockSize() < 3000) return server.send(503, "text/plain", "busy");
   JsonDocument d;
-  d["fw"] = "claude-cube 4.3.3";
+  d["fw"] = "claude-cube 4.3.4";
   { static uint32_t f0 = 0, t0 = 0; uint32_t now = millis();
     if (now - t0 > 0) d["lfps"] = (listenFrames - f0) * 1000.0 / (now - t0); f0 = listenFrames; t0 = now; }
   d["screen"] = (int)cur;
@@ -3526,9 +3529,12 @@ void setup() {
   uint32_t t0 = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - t0 < 20000) delay(200);
   if (WiFi.status() != WL_CONNECTED) {
+    // no network: open the setup hotspot, but if a network is saved keep trying it too
+    // (after a power cut the cube boots faster than the router)
     apMode = true;
-    WiFi.mode(WIFI_AP);
+    WiFi.mode(wifiSaved() ? WIFI_AP_STA : WIFI_AP);
     WiFi.softAP("ClaudeCube");
+    if (wifiSaved()) WiFi.begin();
   } else {
     bootMsg(WiFi.localIP().toString().c_str());
     MDNS.begin("claudecube");
@@ -3545,6 +3551,12 @@ void setup() {
 uint32_t lastFrame = 0, lastHouse = 0;
 void loop() {
   server.handleClient();
+  // waiting for the saved network: the moment it's back, start over as a normal cube
+  if (apMode && wifiSaved()) {
+    static uint32_t retryAt = 0;
+    if (WiFi.status() == WL_CONNECTED) ESP.restart();
+    if (millis() - retryAt > 30000) { retryAt = millis(); WiFi.begin(); }
+  }
   vizPoll();
   if (!apMode) MDNS.update();
   uint32_t t = millis();
